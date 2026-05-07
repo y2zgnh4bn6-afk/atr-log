@@ -154,8 +154,7 @@ textarea{resize:vertical;min-height:78px;line-height:1.5}
 
 <div class="form-body">
 
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzhPm7U199ShwTHEv2UubhxLnC6AJAxqpC1oUSZi9Q9790E-t89B25dLW8cT3GE4cdrzw/exec';
-  </div>
+
 
   <!-- STEP 1 -->
   <div class="card">
@@ -605,7 +604,8 @@ async function submitForm(){
 
   const allTx=[...sel.mod,...sel.mt,...sel.other];
   const payload={
-timestamp:new Date().toLocaleDateString('en-US',{month:'2-digit',day:'2-digit',year:'numeric'})+' '+new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',hour12:true}),    initials, date,
+    timestamp:new Date().toLocaleDateString('en-US',{month:'2-digit',day:'2-digit',year:'numeric'})+' '+new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',hour12:true}),
+    initials, date,
     regions:Object.values(selRegions).join(', '),
     modalities:sel.mod.join(', '),
     manualTherapy:sel.mt.join(', '),
@@ -653,7 +653,11 @@ function showToast(msg,type=''){
 }
 
 // ── INIT ──
-document.getElementById('visit-date').value=new Date().toISOString().split('T')[0];
+const _now=new Date();
+const _y=_now.getFullYear();
+const _m=String(_now.getMonth()+1).padStart(2,'0');
+const _d=String(_now.getDate()).padStart(2,'0');
+document.getElementById('visit-date').value=_y+'-'+_m+'-'+_d;
 ['mod','mt','other'].forEach(k=>{buildOpts(k,LISTS[k]);updateTrigger(k);});
 buildPain('pre-pain','pre');
 buildPain('post-pain','post');
