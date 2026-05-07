@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Stanford Athletics — ATR Visit Log</title>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@600;700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --cardinal:   #8C1515;
+  --cardinal-dk:#6B0F0F;
+  --cardinal-lt:#B83232;
+  --cardinal-bg:#FAF0F0;
+  --cardinal-pale:#F5E6E6;
+  --white:      #FFFFFF;
+  --bg:         #F7F5F4;
+  --surface:    #FFFFFF;
+  --surface2:   #F0EDEC;
+  --border:     #DDD8D6;
+  --border-dark:#C4BEBA;
+  --text:       #1A1210;
+  --text-muted: #6B6260;
+  --text-faint: #9B9490;
+  --danger:     #C0392B;
+  --warn:       #C47A1A;
+  --radius:     12px;
+  --radius-sm:  8px;
+  --radius-pill:100px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{font-size:16px}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:72px}
+
+/* HEADER */
+.app-header{background:var(--cardinal);color:white;padding:0;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(140,21,21,.25)}
+.header-top{padding:14px 18px 10px;display:flex;align-items:center;gap:12px}
+.header-tree{width:32px;height:32px;flex-shrink:0;opacity:.85}
+.header-text .school{font-size:10px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;opacity:.75;margin-bottom:2px}
+.header-text .title{font-size:17px;font-weight:600;letter-spacing:-.01em}
+.header-bar{height:3px;background:linear-gradient(90deg,#C4A000 0%,#E8C200 40%,#C4A000 100%)}
+
+/* FORM */
+.form-body{padding:14px;max-width:520px;margin:0 auto}
+.card{background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);margin-bottom:11px;overflow:hidden}
+.card-header{padding:13px 15px 9px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:9px}
+.step-num{width:22px;height:22px;border-radius:50%;background:var(--cardinal);color:white;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.card-header h2{font-size:14px;font-weight:600;letter-spacing:-.01em;color:var(--text)}
+.card-body{padding:13px 15px}
+
+/* INPUTS */
+label.field-label{display:block;font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px}
+input[type=text],input[type=date],textarea{width:100%;border:1px solid var(--border-dark);border-radius:var(--radius-sm);padding:10px 12px;font-size:15px;font-family:'DM Sans',sans-serif;color:var(--text);background:var(--surface);outline:none;transition:border-color .15s;-webkit-appearance:none;appearance:none}
+input[type=text]:focus,input[type=date]:focus,textarea:focus{border-color:var(--cardinal);box-shadow:0 0 0 3px rgba(140,21,21,.1)}
+textarea{resize:vertical;min-height:78px;line-height:1.5}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+/* BODY MAP */
+.body-map-container{display:flex;background:var(--surface2);border-radius:var(--radius-sm);overflow:hidden;border:1px solid var(--border)}
+.body-view{flex:1;padding:10px 4px 8px;display:flex;flex-direction:column;align-items:center}
+.body-view-label{font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--text-faint);margin-bottom:5px}
+.body-divider{width:1px;background:var(--border);margin:8px 0}
+.body-svg{width:100%;max-width:148px}
+.rz{cursor:pointer;transition:all .13s;fill:#EDE8E7;stroke:#C8C0BD;stroke-width:.8}
+.rz:hover{fill:#F5D5D5;stroke:var(--cardinal-lt)}
+.rz.sel{fill:var(--cardinal);stroke:var(--cardinal-dk)}
+.rl{font-family:'DM Sans',sans-serif;font-size:5.8px;fill:#5a5250;text-anchor:middle;pointer-events:none;font-weight:500}
+.rl.sel{fill:white}
+
+/* REGION TAGS */
+.selected-regions{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px;min-height:28px}
+.region-tag{background:var(--cardinal-pale);color:var(--cardinal-dk);border:1px solid rgba(140,21,21,.2);border-radius:var(--radius-pill);padding:4px 10px;font-size:12px;font-weight:500;display:flex;align-items:center;gap:4px}
+.region-tag .rm{cursor:pointer;font-size:14px;opacity:.55}
+.region-tag .rm:hover{opacity:1}
+.no-sel{font-size:13px;color:var(--text-faint);padding:3px 0}
+
+/* MULTI-SELECT */
+.ms-group{margin-bottom:13px}
+.ms-group:last-child{margin-bottom:0}
+.ms-group-label{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px;display:flex;align-items:center;gap:6px}
+.count-badge{background:var(--cardinal);color:white;border-radius:var(--radius-pill);font-size:10px;padding:1px 7px;font-weight:700;min-width:18px;text-align:center}
+.ms-trigger{width:100%;border:1px solid var(--border-dark);border-radius:var(--radius-sm);padding:10px 12px;font-size:14px;font-family:'DM Sans',sans-serif;background:var(--surface);color:var(--text-muted);text-align:left;display:flex;align-items:center;justify-content:space-between;cursor:pointer;outline:none;transition:border-color .15s}
+.ms-trigger.has-items{color:var(--text)}
+.ms-trigger:focus,.ms-trigger.open{border-color:var(--cardinal);box-shadow:0 0 0 3px rgba(140,21,21,.1)}
+.ms-trigger .arrow{font-size:10px;transition:transform .2s;flex-shrink:0;color:var(--text-faint)}
+.ms-trigger.open .arrow{transform:rotate(180deg)}
+.ms-panel{display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--surface);border:1px solid var(--border-dark);border-radius:var(--radius-sm);box-shadow:0 8px 24px rgba(0,0,0,.11);z-index:200;max-height:240px;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.ms-panel.open{display:block}
+.ms-search{position:sticky;top:0;background:var(--surface);padding:8px 10px;border-bottom:1px solid var(--border)}
+.ms-search input{width:100%;border:1px solid var(--border);border-radius:6px;padding:7px 10px;font-size:13px;font-family:'DM Sans',sans-serif;outline:none;background:var(--surface2)}
+.ms-option{display:flex;align-items:center;gap:10px;padding:10px 12px;cursor:pointer;font-size:14px;color:var(--text);transition:background .1s;border-bottom:1px solid var(--border)}
+.ms-option:last-child{border-bottom:none}
+.ms-option:hover{background:var(--surface2)}
+.ms-option.checked{background:var(--cardinal-pale)}
+.ms-checkbox{width:18px;height:18px;border:1.5px solid var(--border-dark);border-radius:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:white;transition:all .1s}
+.ms-option.checked .ms-checkbox{background:var(--cardinal);border-color:var(--cardinal)}
+.ms-option.checked .ms-checkbox::after{content:'✓';font-size:11px;color:white;font-weight:700}
+.ms-tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+.ms-tag{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-pill);padding:3px 10px;font-size:12px;color:var(--text);display:flex;align-items:center;gap:4px}
+.ms-tag .rm{cursor:pointer;color:var(--text-faint);font-size:13px}
+.ms-tag .rm:hover{color:var(--danger)}
+.ms-dropdown-wrap{position:relative}
+
+/* PAIN SCALE */
+.pain-scale{display:flex;gap:4px;flex-wrap:nowrap}
+.pain-btn{flex:1;min-width:0;padding:9px 2px;border:1px solid var(--border-dark);border-radius:var(--radius-sm);background:white;font-size:14px;font-weight:500;font-family:'DM Mono',monospace;cursor:pointer;color:var(--text-muted);transition:all .13s;text-align:center}
+.pain-btn:hover{border-color:var(--cardinal);color:var(--cardinal)}
+.pain-btn.sel-0,.pain-btn.sel-1,.pain-btn.sel-2{background:#FFF0F0;border-color:var(--cardinal-lt);color:var(--cardinal)}
+.pain-btn.sel-3,.pain-btn.sel-4,.pain-btn.sel-5{background:#FFF8EC;border-color:#E8A800;color:#7A5500}
+.pain-btn.sel-6,.pain-btn.sel-7{background:#FFF0E0;border-color:var(--warn);color:var(--warn)}
+.pain-btn.sel-8,.pain-btn.sel-9,.pain-btn.sel-10{background:#FEE;border-color:var(--danger);color:var(--danger)}
+.pain-sublabel{display:flex;justify-content:space-between;margin-top:4px;font-size:11px;color:var(--text-faint)}
+
+/* SUBMIT */
+.submit-wrap{padding:14px 14px 0;max-width:520px;margin:0 auto}
+.submit-btn{width:100%;padding:15px;background:var(--cardinal);color:white;border:none;border-radius:var(--radius);font-size:16px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;letter-spacing:-.01em;transition:background .15s,transform .1s;display:flex;align-items:center;justify-content:center;gap:8px}
+.submit-btn:hover{background:var(--cardinal-dk)}
+.submit-btn:active{transform:scale(.98)}
+.submit-btn:disabled{background:var(--text-faint);cursor:not-allowed;transform:none}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(100px);background:var(--text);color:white;padding:12px 20px;border-radius:var(--radius);font-size:14px;font-weight:500;z-index:999;transition:transform .3s ease;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,.2)}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.toast.success{background:var(--cardinal)}
+.toast.error{background:var(--danger)}
+
+/* CONFIG BANNER */
+.cfg{background:#FFF8E6;border:1px solid #F0C030;border-radius:var(--radius-sm);padding:10px 13px;font-size:12px;color:#6B5000;margin-bottom:11px;display:flex;gap:8px}
+.cfg strong{font-weight:600}
+
+/* DIVIDER */
+.field-div{margin-top:14px;padding-top:14px;border-top:1px solid var(--border)}
+</style>
+</head>
+<body>
+
+<div class="app-header">
+  <div class="header-top">
+    <!-- Stanford Tree SVG simplified -->
+    <svg class="header-tree" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <rect x="27" y="44" width="6" height="14" fill="rgba(255,255,255,.6)" rx="2"/>
+      <ellipse cx="30" cy="36" rx="18" ry="14" fill="rgba(255,255,255,.5)"/>
+      <ellipse cx="30" cy="26" rx="14" ry="12" fill="rgba(255,255,255,.65)"/>
+      <ellipse cx="30" cy="17" rx="10" ry="10" fill="rgba(255,255,255,.8)"/>
+      <ellipse cx="22" cy="30" rx="8" ry="7" fill="rgba(255,255,255,.45)"/>
+      <ellipse cx="38" cy="30" rx="8" ry="7" fill="rgba(255,255,255,.45)"/>
+    </svg>
+    <div class="header-text">
+      <div class="school">Stanford Athletics</div>
+      <div class="title">ATR Daily Visit Log</div>
+    </div>
+  </div>
+  <div class="header-bar"></div>
+</div>
+
+<div class="form-body">
+
+  <div class="cfg" id="cfg-banner">
+    ⚙️ <span><strong>Setup:</strong> Replace <code>YOUR_SCRIPT_URL_HERE</code> in the JS with your Google Apps Script URL.</span>
+  </div>
+
+  <!-- STEP 1 -->
+  <div class="card">
+    <div class="card-header">
+      <div class="step-num">1</div>
+      <h2>Athlete info</h2>
+    </div>
+    <div class="card-body">
+      <div class="field-row">
+        <div>
+          <label class="field-label">Initials</label>
+          <input type="text" id="initials" placeholder="e.g. JD" maxlength="5" autocomplete="off">
+        </div>
+        <div>
+          <label class="field-label">Date</label>
+          <input type="date" id="visit-date">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 2: BODY MAP -->
+  <div class="card">
+    <div class="card-header">
+      <div class="step-num">2</div>
+      <h2>Area(s) to work on — tap to select</h2>
+    </div>
+    <div class="card-body" style="padding-bottom:10px">
+      <div class="body-map-container">
+
+        <!-- FRONT -->
+        <div class="body-view">
+          <div class="body-view-label">Front</div>
+          <svg class="body-svg" viewBox="0 0 110 270" xmlns="http://www.w3.org/2000/svg">
+            <!-- HEAD/NECK -->
+            <ellipse class="rz" id="zf-head" cx="55" cy="14" rx="13" ry="12" onclick="tog('head','Head / Neck')"/>
+            <text class="rl" id="zfl-head" x="55" y="13.5">Head</text>
+            <text class="rl" id="zfl-head2" x="55" y="19.5">/ Neck</text>
+            <!-- L SHOULDER -->
+            <ellipse class="rz" id="zf-lshoulder" cx="23" cy="36" rx="9" ry="8" onclick="tog('lshoulder','L Shoulder')"/>
+            <text class="rl" id="zfl-lshoulder" x="23" y="35">L</text>
+            <text class="rl" id="zfl-lshoulder2" x="23" y="41">Shld</text>
+            <!-- R SHOULDER -->
+            <ellipse class="rz" id="zf-rshoulder" cx="87" cy="36" rx="9" ry="8" onclick="tog('rshoulder','R Shoulder')"/>
+            <text class="rl" id="zfl-rshoulder" x="87" y="35">R</text>
+            <text class="rl" id="zfl-rshoulder2" x="87" y="41">Shld</text>
+            <!-- CHEST -->
+            <rect class="rz" id="zf-chest" x="32" y="29" width="42" height="26" rx="4" onclick="tog('chest','Chest / Thoracic')"/>
+            <text class="rl" id="zfl-chest" x="53" y="40">Chest /</text>
+            <text class="rl" id="zfl-chest2" x="53" y="47">Thoracic</text>
+            <!-- CORE -->
+            <rect class="rz" id="zf-core" x="35" y="56" width="36" height="18" rx="3" onclick="tog('core','Abdomen / Core')"/>
+            <text class="rl" id="zfl-core" x="53" y="64">Abdomen</text>
+            <text class="rl" id="zfl-core2" x="53" y="70">/ Core</text>
+            <!-- L UPPER ARM -->
+            <rect class="rz" id="zf-luparm" x="9" y="43" width="11" height="26" rx="4" onclick="tog('luparm','L Upper Arm')"/>
+            <text class="rl" id="zfl-luparm" x="14.5" y="54">L</text>
+            <text class="rl" id="zfl-luparm2" x="14.5" y="60">Arm</text>
+            <!-- R UPPER ARM -->
+            <rect class="rz" id="zf-ruparm" x="90" y="43" width="11" height="26" rx="4" onclick="tog('ruparm','R Upper Arm')"/>
+            <text class="rl" id="zfl-ruparm" x="95.5" y="54">R</text>
+            <text class="rl" id="zfl-ruparm2" x="95.5" y="60">Arm</text>
+            <!-- L ELBOW -->
+            <ellipse class="rz" id="zf-lelbow" cx="14.5" cy="73" rx="6" ry="5" onclick="tog('lelbow','L Elbow')"/>
+            <text class="rl" id="zfl-lelbow" x="14.5" y="75">L Elb</text>
+            <!-- R ELBOW -->
+            <ellipse class="rz" id="zf-relbow" cx="95.5" cy="73" rx="6" ry="5" onclick="tog('relbow','R Elbow')"/>
+            <text class="rl" id="zfl-relbow" x="95.5" y="75">R Elb</text>
+            <!-- L FOREARM -->
+            <rect class="rz" id="zf-lfore" x="9" y="80" width="11" height="20" rx="4" onclick="tog('lfore','L Forearm')"/>
+            <text class="rl" id="zfl-lfore" x="14.5" y="89">L</text>
+            <text class="rl" id="zfl-lfore2" x="14.5" y="95">Fore</text>
+            <!-- R FOREARM -->
+            <rect class="rz" id="zf-rfore" x="90" y="80" width="11" height="20" rx="4" onclick="tog('rfore','R Forearm')"/>
+            <text class="rl" id="zfl-rfore" x="95.5" y="89">R</text>
+            <text class="rl" id="zfl-rfore2" x="95.5" y="95">Fore</text>
+            <!-- L WRIST/HAND -->
+            <ellipse class="rz" id="zf-lhand" cx="14.5" cy="106" rx="7" ry="6" onclick="tog('lhand','L Wrist / Hand')"/>
+            <text class="rl" id="zfl-lhand" x="14.5" y="105">L</text>
+            <text class="rl" id="zfl-lhand2" x="14.5" y="111">Hand</text>
+            <!-- R WRIST/HAND -->
+            <ellipse class="rz" id="zf-rhand" cx="95.5" cy="106" rx="7" ry="6" onclick="tog('rhand','R Wrist / Hand')"/>
+            <text class="rl" id="zfl-rhand" x="95.5" y="105">R</text>
+            <text class="rl" id="zfl-rhand2" x="95.5" y="111">Hand</text>
+            <!-- HIP/PELVIS -->
+            <rect class="rz" id="zf-hip" x="31" y="75" width="44" height="20" rx="4" onclick="tog('hip','Hip / Pelvis')"/>
+            <text class="rl" id="zfl-hip" x="53" y="88">Hip / Pelvis</text>
+            <!-- L GROIN -->
+            <rect class="rz" id="zf-lgroin" x="30" y="96" width="20" height="13" rx="3" onclick="tog('lgroin','L Groin / Adductor')"/>
+            <text class="rl" id="zfl-lgroin" x="40" y="101">L</text>
+            <text class="rl" id="zfl-lgroin2" x="40" y="107">Groin</text>
+            <!-- R GROIN -->
+            <rect class="rz" id="zf-rgroin" x="56" y="96" width="20" height="13" rx="3" onclick="tog('rgroin','R Groin / Adductor')"/>
+            <text class="rl" id="zfl-rgroin" x="66" y="101">R</text>
+            <text class="rl" id="zfl-rgroin2" x="66" y="107">Groin</text>
+            <!-- L QUAD -->
+            <rect class="rz" id="zf-lquad" x="30" y="110" width="21" height="38" rx="6" onclick="tog('lquad','L Quad / Thigh')"/>
+            <text class="rl" id="zfl-lquad" x="40.5" y="127">L</text>
+            <text class="rl" id="zfl-lquad2" x="40.5" y="133">Quad</text>
+            <!-- R QUAD -->
+            <rect class="rz" id="zf-rquad" x="55" y="110" width="21" height="38" rx="6" onclick="tog('rquad','R Quad / Thigh')"/>
+            <text class="rl" id="zfl-rquad" x="65.5" y="127">R</text>
+            <text class="rl" id="zfl-rquad2" x="65.5" y="133">Quad</text>
+            <!-- L KNEE -->
+            <ellipse class="rz" id="zf-lknee" cx="40.5" cy="153" rx="11" ry="7" onclick="tog('lknee','L Knee')"/>
+            <text class="rl" id="zfl-lknee" x="40.5" y="155">L Knee</text>
+            <!-- R KNEE -->
+            <ellipse class="rz" id="zf-rknee" cx="65.5" cy="153" rx="11" ry="7" onclick="tog('rknee','R Knee')"/>
+            <text class="rl" id="zfl-rknee" x="65.5" y="155">R Knee</text>
+            <!-- L SHIN -->
+            <rect class="rz" id="zf-lshin" x="31" y="162" width="18" height="34" rx="5" onclick="tog('lshin','L Shin / Lower Leg')"/>
+            <text class="rl" id="zfl-lshin" x="40" y="177">L</text>
+            <text class="rl" id="zfl-lshin2" x="40" y="183">Shin</text>
+            <!-- R SHIN -->
+            <rect class="rz" id="zf-rshin" x="57" y="162" width="18" height="34" rx="5" onclick="tog('rshin','R Shin / Lower Leg')"/>
+            <text class="rl" id="zfl-rshin" x="66" y="177">R</text>
+            <text class="rl" id="zfl-rshin2" x="66" y="183">Shin</text>
+            <!-- L ANKLE/FOOT -->
+            <ellipse class="rz" id="zf-lankle" cx="40" cy="204" rx="12" ry="7" onclick="tog('lankle','L Ankle / Foot')"/>
+            <text class="rl" id="zfl-lankle" x="40" y="206">L Ankle</text>
+            <!-- R ANKLE/FOOT -->
+            <ellipse class="rz" id="zf-rankle" cx="66" cy="204" rx="12" ry="7" onclick="tog('rankle','R Ankle / Foot')"/>
+            <text class="rl" id="zfl-rankle" x="66" y="206">R Ankle</text>
+          </svg>
+        </div>
+
+        <div class="body-divider"></div>
+
+        <!-- BACK -->
+        <div class="body-view">
+          <div class="body-view-label">Back</div>
+          <svg class="body-svg" viewBox="0 0 110 270" xmlns="http://www.w3.org/2000/svg">
+            <!-- HEAD -->
+            <ellipse class="rz" id="zb-head" cx="55" cy="14" rx="13" ry="12" onclick="tog('head','Head / Neck')"/>
+            <text class="rl" id="zbl-head" x="55" y="13.5">Head</text>
+            <text class="rl" id="zbl-head2" x="55" y="19.5">/ Neck</text>
+            <!-- L SHOULDER BACK -->
+            <ellipse class="rz" id="zb-lshoulder" cx="23" cy="36" rx="9" ry="8" onclick="tog('lshoulder','L Shoulder')"/>
+            <text class="rl" id="zbl-lshoulder" x="23" y="35">L</text>
+            <text class="rl" id="zbl-lshoulder2" x="23" y="41">Shld</text>
+            <!-- R SHOULDER BACK -->
+            <ellipse class="rz" id="zb-rshoulder" cx="87" cy="36" rx="9" ry="8" onclick="tog('rshoulder','R Shoulder')"/>
+            <text class="rl" id="zbl-rshoulder" x="87" y="35">R</text>
+            <text class="rl" id="zbl-rshoulder2" x="87" y="41">Shld</text>
+            <!-- UPPER BACK / TRAPS -->
+            <rect class="rz" id="zb-upperback" x="31" y="29" width="44" height="18" rx="4" onclick="tog('upperback','Upper Back / Traps')"/>
+            <text class="rl" id="zbl-upperback" x="53" y="37">Upper Back</text>
+            <text class="rl" id="zbl-upperback2" x="53" y="43">/ Traps</text>
+            <!-- L SCAP -->
+            <rect class="rz" id="zb-lscap" x="31" y="48" width="18" height="20" rx="3" onclick="tog('lscap','L Rhomboid / Scap')"/>
+            <text class="rl" id="zbl-lscap" x="40" y="57">L</text>
+            <text class="rl" id="zbl-lscap2" x="40" y="63">Scap</text>
+            <!-- R SCAP -->
+            <rect class="rz" id="zb-rscap" x="57" y="48" width="18" height="20" rx="3" onclick="tog('rscap','R Rhomboid / Scap')"/>
+            <text class="rl" id="zbl-rscap" x="66" y="57">R</text>
+            <text class="rl" id="zbl-rscap2" x="66" y="63">Scap</text>
+            <!-- LUMBAR -->
+            <rect class="rz" id="zb-lumbar" x="33" y="69" width="40" height="22" rx="4" onclick="tog('lumbar','Lumbar / Low Back')"/>
+            <text class="rl" id="zbl-lumbar" x="53" y="78">Lumbar</text>
+            <text class="rl" id="zbl-lumbar2" x="53" y="84">/ Low Back</text>
+            <!-- L ARM BACK -->
+            <rect class="rz" id="zb-luparm" x="9" y="43" width="11" height="26" rx="4" onclick="tog('luparm','L Upper Arm')"/>
+            <text class="rl" id="zbl-luparm" x="14.5" y="54">L</text>
+            <text class="rl" id="zbl-luparm2" x="14.5" y="60">Arm</text>
+            <!-- R ARM BACK -->
+            <rect class="rz" id="zb-ruparm" x="90" y="43" width="11" height="26" rx="4" onclick="tog('ruparm','R Upper Arm')"/>
+            <text class="rl" id="zbl-ruparm" x="95.5" y="54">R</text>
+            <text class="rl" id="zbl-ruparm2" x="95.5" y="60">Arm</text>
+            <!-- L ELBOW BACK -->
+            <ellipse class="rz" id="zb-lelbow" cx="14.5" cy="73" rx="6" ry="5" onclick="tog('lelbow','L Elbow')"/>
+            <text class="rl" id="zbl-lelbow" x="14.5" y="75">L Elb</text>
+            <!-- R ELBOW BACK -->
+            <ellipse class="rz" id="zb-relbow" cx="95.5" cy="73" rx="6" ry="5" onclick="tog('relbow','R Elbow')"/>
+            <text class="rl" id="zbl-relbow" x="95.5" y="75">R Elb</text>
+            <!-- L FOREARM BACK -->
+            <rect class="rz" id="zb-lfore" x="9" y="80" width="11" height="20" rx="4" onclick="tog('lfore','L Forearm')"/>
+            <text class="rl" id="zbl-lfore" x="14.5" y="89">L</text>
+            <text class="rl" id="zbl-lfore2" x="14.5" y="95">Fore</text>
+            <!-- R FOREARM BACK -->
+            <rect class="rz" id="zb-rfore" x="90" y="80" width="11" height="20" rx="4" onclick="tog('rfore','R Forearm')"/>
+            <text class="rl" id="zbl-rfore" x="95.5" y="89">R</text>
+            <text class="rl" id="zbl-rfore2" x="95.5" y="95">Fore</text>
+            <!-- L WRIST/HAND BACK -->
+            <ellipse class="rz" id="zb-lhand" cx="14.5" cy="106" rx="7" ry="6" onclick="tog('lhand','L Wrist / Hand')"/>
+            <text class="rl" id="zbl-lhand" x="14.5" y="105">L</text>
+            <text class="rl" id="zbl-lhand2" x="14.5" y="111">Hand</text>
+            <!-- R WRIST/HAND BACK -->
+            <ellipse class="rz" id="zb-rhand" cx="95.5" cy="106" rx="7" ry="6" onclick="tog('rhand','R Wrist / Hand')"/>
+            <text class="rl" id="zbl-rhand" x="95.5" y="105">R</text>
+            <text class="rl" id="zbl-rhand2" x="95.5" y="111">Hand</text>
+            <!-- L GLUTE -->
+            <ellipse class="rz" id="zb-lglute" cx="40.5" cy="101" rx="12" ry="11" onclick="tog('lglute','L Glute / Piriformis')"/>
+            <text class="rl" id="zbl-lglute" x="40.5" y="100">L</text>
+            <text class="rl" id="zbl-lglute2" x="40.5" y="106">Glute</text>
+            <!-- R GLUTE -->
+            <ellipse class="rz" id="zb-rglute" cx="65.5" cy="101" rx="12" ry="11" onclick="tog('rglute','R Glute / Piriformis')"/>
+            <text class="rl" id="zbl-rglute" x="65.5" y="100">R</text>
+            <text class="rl" id="zbl-rglute2" x="65.5" y="106">Glute</text>
+            <!-- L HAMSTRING -->
+            <rect class="rz" id="zb-lham" x="30" y="113" width="21" height="36" rx="6" onclick="tog('lham','L Hamstring')"/>
+            <text class="rl" id="zbl-lham" x="40.5" y="129">L</text>
+            <text class="rl" id="zbl-lham2" x="40.5" y="135">Ham</text>
+            <!-- R HAMSTRING -->
+            <rect class="rz" id="zb-rham" x="55" y="113" width="21" height="36" rx="6" onclick="tog('rham','R Hamstring')"/>
+            <text class="rl" id="zbl-rham" x="65.5" y="129">R</text>
+            <text class="rl" id="zbl-rham2" x="65.5" y="135">Ham</text>
+            <!-- L KNEE BACK -->
+            <ellipse class="rz" id="zb-lknee" cx="40.5" cy="153" rx="11" ry="7" onclick="tog('lknee','L Knee')"/>
+            <text class="rl" id="zbl-lknee" x="40.5" y="155">L Knee</text>
+            <!-- R KNEE BACK -->
+            <ellipse class="rz" id="zb-rknee" cx="65.5" cy="153" rx="11" ry="7" onclick="tog('rknee','R Knee')"/>
+            <text class="rl" id="zbl-rknee" x="65.5" y="155">R Knee</text>
+            <!-- L CALF -->
+            <rect class="rz" id="zb-lcalf" x="31" y="162" width="18" height="34" rx="5" onclick="tog('lcalf','L Calf / Achilles')"/>
+            <text class="rl" id="zbl-lcalf" x="40" y="177">L</text>
+            <text class="rl" id="zbl-lcalf2" x="40" y="183">Calf</text>
+            <!-- R CALF -->
+            <rect class="rz" id="zb-rcalf" x="57" y="162" width="18" height="34" rx="5" onclick="tog('rcalf','R Calf / Achilles')"/>
+            <text class="rl" id="zbl-rcalf" x="66" y="177">R</text>
+            <text class="rl" id="zbl-rcalf2" x="66" y="183">Calf</text>
+            <!-- L ANKLE BACK -->
+            <ellipse class="rz" id="zb-lankle" cx="40" cy="204" rx="12" ry="7" onclick="tog('lankle','L Ankle / Foot')"/>
+            <text class="rl" id="zbl-lankle" x="40" y="206">L Ankle</text>
+            <!-- R ANKLE BACK -->
+            <ellipse class="rz" id="zb-rankle" cx="66" cy="204" rx="12" ry="7" onclick="tog('rankle','R Ankle / Foot')"/>
+            <text class="rl" id="zbl-rankle" x="66" y="206">R Ankle</text>
+          </svg>
+        </div>
+      </div>
+
+      <div class="selected-regions" id="region-tags">
+        <span class="no-sel">No regions selected yet</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 3: TREATMENTS -->
+  <div class="card">
+    <div class="card-header">
+      <div class="step-num">3</div>
+      <h2>Treatments received</h2>
+    </div>
+    <div class="card-body">
+
+      <div class="ms-group">
+        <div class="ms-group-label">Modalities <span class="count-badge" id="mod-count">0</span></div>
+        <div class="ms-dropdown-wrap">
+          <button class="ms-trigger" id="mod-trigger" onclick="toggleDD('mod')" type="button">
+            <span id="mod-trigger-text">Select modalities...</span><span class="arrow">▼</span>
+          </button>
+          <div class="ms-panel" id="mod-panel">
+            <div class="ms-search"><input type="text" placeholder="Search..." oninput="filterOpts('mod',this.value)"></div>
+            <div id="mod-options"></div>
+          </div>
+        </div>
+        <div class="ms-tags" id="mod-tags"></div>
+      </div>
+
+      <div class="ms-group">
+        <div class="ms-group-label">Manual therapy <span class="count-badge" id="mt-count">0</span></div>
+        <div class="ms-dropdown-wrap">
+          <button class="ms-trigger" id="mt-trigger" onclick="toggleDD('mt')" type="button">
+            <span id="mt-trigger-text">Select manual therapy...</span><span class="arrow">▼</span>
+          </button>
+          <div class="ms-panel" id="mt-panel">
+            <div class="ms-search"><input type="text" placeholder="Search..." oninput="filterOpts('mt',this.value)"></div>
+            <div id="mt-options"></div>
+          </div>
+        </div>
+        <div class="ms-tags" id="mt-tags"></div>
+      </div>
+
+      <div class="ms-group">
+        <div class="ms-group-label">Therapeutic exercise &amp; other <span class="count-badge" id="other-count">0</span></div>
+        <div class="ms-dropdown-wrap">
+          <button class="ms-trigger" id="other-trigger" onclick="toggleDD('other')" type="button">
+            <span id="other-trigger-text">Select exercise / other...</span><span class="arrow">▼</span>
+          </button>
+          <div class="ms-panel" id="other-panel">
+            <div class="ms-search"><input type="text" placeholder="Search..." oninput="filterOpts('other',this.value)"></div>
+            <div id="other-options"></div>
+          </div>
+        </div>
+        <div class="ms-tags" id="other-tags"></div>
+      </div>
+
+      <!-- FREETEXT TREATMENT -->
+      <div class="ms-group field-div">
+        <label class="field-label">Anything else not listed above?</label>
+        <textarea id="extra-tx" placeholder="Write in any additional treatments, notes on what was done, specific exercises, parameters, etc..."></textarea>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- STEP 4: FEEL -->
+  <div class="card">
+    <div class="card-header">
+      <div class="step-num">4</div>
+      <h2>How you feel</h2>
+    </div>
+    <div class="card-body">
+      <label class="field-label">Before treatment — pain / discomfort (0–10)</label>
+      <div class="pain-scale" id="pre-pain"></div>
+      <div class="pain-sublabel"><span>No pain</span><span>Worst pain</span></div>
+
+      <div style="margin-top:15px">
+        <label class="field-label">After treatment — pain / discomfort (0–10)</label>
+        <div class="pain-scale" id="post-pain"></div>
+        <div class="pain-sublabel"><span>No pain</span><span>Worst pain</span></div>
+      </div>
+
+      <div style="margin-top:15px">
+        <label class="field-label">Notes for your AT (optional)</label>
+        <textarea id="athlete-notes" placeholder="How things felt, what helped, anything to flag for your AT..."></textarea>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="submit-wrap">
+  <button class="submit-btn" id="submit-btn" onclick="submitForm()">
+    <span id="submit-label">Submit visit log</span>
+  </button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── CONFIG ── Replace with your deployed Google Apps Script URL
+const SCRIPT_URL = 'YOUR_SCRIPT_URL_HERE';
+
+// ── TREATMENT LISTS ──
+const MODALITIES = ["Biofeedback","Biowave","Bone Stim","Combo","Compex","E Stim - IFC","E Stim - PreMod","E-Stim","Firefly","Game Ready","HivaMat/X5","InterX","Laser","Marc Pro","Normatec","Paraffin","PEMF","Power Plate – Vibration Plate","Radial Pressure Wave (RPW)","Red Light Therapy","Russian ESTIM","Softwave","TheraGun","Therm-X","Ultrasound","Venom","Vibration Massage Device"];
+const MANUAL = ["Accupressure","Active Assisted Thoracic Flx/Ext","Active Assisted Thoracic Rotation","Active Release Technique (ART)","Body Tempering","Cross Friction","Cupping","Foam Rolling","Graston","IASTM","Joint Mobilization","Lumbar Traction","Lymph Massage","Manual Therapy","Massage","Mobilizations with movement","Mulligan","Muscle Energy Technique","Myofascial Decompression","Myofascial Release","Neurodynamics","OMM","PNF","PRT","Pso-Rite","Scar Mobilizations","Self Myofascial Release","Soft Tissue Mobilization","Stick Mobility","Strain-Counterstrain","Stretching","Theracane","Trigger Point Release","VooDoo Floss Band","Wedge Mobilization"];
+const OTHER = ["Alter-G","Betadine Soak","Blood Flow Restriction","Cold Whirlpool","Compression","Concussion RTP","Contrast","Cryotherapy","DNS","Dynamo Testing","Force Plate Jump Testing","Girth Measurements","Grip Strength Testing","Heat Pack","Ice","Ice Cup","Isokinetic Testing","Jogging","Mobility","Nord Board Testing","POOL TherEx","Recovery","Running Progression","Suji","Taping/Bracing","TherEx","Throwing Progression","UBE","Vasper","Warm Whirlpool","Wound Care"];
+const LISTS = {mod:MODALITIES, mt:MANUAL, other:OTHER};
+const PLACEHOLDERS = {mod:'Select modalities...',mt:'Select manual therapy...',other:'Select exercise / other...'};
+
+// ── STATE ──
+const sel = {mod:[],mt:[],other:[]};
+const selRegions = {};
+let prePain=null, postPain=null;
+
+// ── BODY MAP ──
+function tog(id,label){
+  if(selRegions[id]) delete selRegions[id];
+  else selRegions[id]=label;
+  syncMap();
+}
+
+function syncMap(){
+  // sync all SVG zones — both front (zf-) and back (zb-)
+  document.querySelectorAll('.rz').forEach(el=>{
+    const raw=el.id.replace(/^z[fb]-/,'');
+    el.classList.toggle('sel',!!selRegions[raw]);
+  });
+  // sync labels
+  document.querySelectorAll('.rl').forEach(el=>{
+    const raw=el.id.replace(/^z[fb]l-/,'').replace(/\d+$/,'');
+    el.classList.toggle('sel',!!selRegions[raw]);
+  });
+  renderRegionTags();
+}
+
+function renderRegionTags(){
+  const c=document.getElementById('region-tags');
+  const entries=Object.entries(selRegions);
+  if(!entries.length){c.innerHTML='<span class="no-sel">No regions selected yet</span>';return;}
+  c.innerHTML=entries.map(([id,label])=>
+    `<span class="region-tag">${label}<span class="rm" onclick="rmRegion('${id}')">×</span></span>`
+  ).join('');
+}
+function rmRegion(id){delete selRegions[id];syncMap();}
+
+// ── DROPDOWNS ──
+function buildOpts(key,items){
+  document.getElementById(key+'-options').innerHTML=items.map(item=>
+    `<div class="ms-option${sel[key].includes(item)?' checked':''}" onclick="toggleOpt('${key}','${item.replace(/'/g,"\\'")}',this)">
+      <div class="ms-checkbox"></div><span>${item}</span>
+    </div>`
+  ).join('');
+}
+function toggleOpt(key,item,el){
+  const i=sel[key].indexOf(item);
+  if(i>-1){sel[key].splice(i,1);el.classList.remove('checked');}
+  else{sel[key].push(item);el.classList.add('checked');}
+  updateTrigger(key); renderTxTags(key);
+}
+function updateTrigger(key){
+  const n=sel[key].length;
+  document.getElementById(key+'-count').textContent=n;
+  document.getElementById(key+'-trigger-text').textContent=n?`${n} selected`:PLACEHOLDERS[key];
+  document.getElementById(key+'-trigger').classList.toggle('has-items',n>0);
+}
+function renderTxTags(key){
+  document.getElementById(key+'-tags').innerHTML=sel[key].map(item=>
+    `<span class="ms-tag">${item}<span class="rm" onclick="rmTag('${key}','${item.replace(/'/g,"\\'")}')">×</span></span>`
+  ).join('');
+}
+function rmTag(key,item){
+  const i=sel[key].indexOf(item); if(i>-1) sel[key].splice(i,1);
+  updateTrigger(key); renderTxTags(key);
+  buildOpts(key,LISTS[key]);
+}
+function toggleDD(key){
+  const panel=document.getElementById(key+'-panel');
+  const trigger=document.getElementById(key+'-trigger');
+  const isOpen=panel.classList.contains('open');
+  closeAll();
+  if(!isOpen){panel.classList.add('open');trigger.classList.add('open');}
+}
+function closeAll(){
+  document.querySelectorAll('.ms-panel').forEach(p=>p.classList.remove('open'));
+  document.querySelectorAll('.ms-trigger').forEach(t=>t.classList.remove('open'));
+}
+function filterOpts(key,q){
+  const filtered=q?LISTS[key].filter(i=>i.toLowerCase().includes(q.toLowerCase())):LISTS[key];
+  buildOpts(key,filtered);
+}
+document.addEventListener('click',e=>{if(!e.target.closest('.ms-dropdown-wrap'))closeAll();});
+
+// ── PAIN SCALE ──
+function buildPain(containerId,stateKey){
+  const c=document.getElementById(containerId);
+  c.innerHTML='';
+  for(let i=0;i<=10;i++){
+    const btn=document.createElement('button');
+    btn.type='button'; btn.className='pain-btn'; btn.textContent=i;
+    const val=stateKey==='pre'?prePain:postPain;
+    if(val===i) btn.classList.add('sel-'+i);
+    btn.onclick=()=>{
+      if(stateKey==='pre') prePain=i; else postPain=i;
+      buildPain(containerId,stateKey);
+    };
+    c.appendChild(btn);
+  }
+}
+
+// ── SUBMIT ──
+async function submitForm(){
+  const initials=document.getElementById('initials').value.trim().toUpperCase();
+  const date=document.getElementById('visit-date').value;
+  if(!initials||!date){showToast('Please enter your initials and date.','error');return;}
+  if(!Object.keys(selRegions).length){showToast('Please select at least one body region.','error');return;}
+
+  const allTx=[...sel.mod,...sel.mt,...sel.other];
+  const payload={
+    timestamp:new Date().toISOString(),
+    initials, date,
+    regions:Object.values(selRegions).join(', '),
+    modalities:sel.mod.join(', '),
+    manualTherapy:sel.mt.join(', '),
+    therexOther:sel.other.join(', '),
+    allTreatments:allTx.join(', '),
+    extraTreatments:document.getElementById('extra-tx').value.trim(),
+    prePain:prePain!==null?prePain:'',
+    postPain:postPain!==null?postPain:'',
+    notes:document.getElementById('athlete-notes').value.trim()
+  };
+
+  const btn=document.getElementById('submit-btn');
+  btn.disabled=true;
+  document.getElementById('submit-label').textContent='Submitting...';
+
+  try{
+    await fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    showToast('Visit logged! Go Cardinal!','success');
+    resetForm();
+  }catch(err){
+    showToast('Error — check your connection.','error');
+  }finally{
+    btn.disabled=false;
+    document.getElementById('submit-label').textContent='Submit visit log';
+  }
+}
+
+function resetForm(){
+  document.getElementById('initials').value='';
+  document.getElementById('athlete-notes').value='';
+  document.getElementById('extra-tx').value='';
+  Object.keys(selRegions).forEach(k=>delete selRegions[k]);
+  syncMap();
+  sel.mod=[];sel.mt=[];sel.other=[];
+  ['mod','mt','other'].forEach(k=>{buildOpts(k,LISTS[k]);updateTrigger(k);renderTxTags(k);});
+  prePain=null;postPain=null;
+  buildPain('pre-pain','pre');buildPain('post-pain','post');
+}
+
+function showToast(msg,type=''){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.className='toast '+type;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3500);
+}
+
+// ── INIT ──
+document.getElementById('visit-date').value=new Date().toISOString().split('T')[0];
+['mod','mt','other'].forEach(k=>{buildOpts(k,LISTS[k]);updateTrigger(k);});
+buildPain('pre-pain','pre');
+buildPain('post-pain','post');
+</script>
+
+<!--
+APPS SCRIPT UPDATE — Add this column to your sheet headers:
+  Extra Treatments
+Place it after "All Treatments" and before "Pre-Pain".
+
+Updated full header row:
+Timestamp | Initials | Date | Regions | Modalities | Manual Therapy | TherEx/Other | All Treatments | Extra Treatments | Pre-Pain | Post-Pain | Notes
+
+Updated doPost function — add this line after data.allTreatments:
+      data.extraTreatments,
+-->
+</body>
+</html>
